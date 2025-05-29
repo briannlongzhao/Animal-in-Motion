@@ -1,7 +1,6 @@
 base_path: "data"
 db_path: "data/database.sqlite"
 categories: ["dog"]
-#version: 1.0.0
 
 max_download: 10
 filter_words: ["sound", "music", "song", "cartoon", "game", "anime"]
