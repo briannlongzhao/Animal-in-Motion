@@ -14,9 +14,9 @@ def parse_args():
     parser.add_argument("--base_path", type=str, help="Base path to the dataset")
     parser.add_argument("--db_path", type=str, help="Path to database file")
     parser.add_argument("--max_download", type=int, default=None, help="Max number of videos to download")
-    parser.add_argument("--max_query", type=int, default=None, help="Max number of queries to generate")
+    parser.add_argument("--max_query", type=int, default=30, help="Max number of queries to generate")
     parser.add_argument("--max_video_per_category", type=int, default=None, help="Max number of videos to download per category")
-    parser.add_argument("--verbose", type=bool, default=True)
+    parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--version", type=str, default=None, help="Version of the dataset")
     parser.add_argument(
         "--dry_run", action="store_true", help="Scrape and insert rows to dataset without downloading"

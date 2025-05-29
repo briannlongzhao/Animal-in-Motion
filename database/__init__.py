@@ -24,7 +24,7 @@ class Status(str, Enum):
 
 def config_db_path():
     parser = ArgumentParser()
-    parser.add_argument("-c", "--config", type=str, is_config_file=True, default="configs/config.yml")
+    parser.add_argument("-c", "--config", type=str, is_config_file=True, default="configs/default.yml")
     parser.add_argument("--db_path", type=str)
     args, _ = parser.parse_known_args()
     return args.db_path

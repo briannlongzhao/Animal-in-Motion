@@ -54,14 +54,23 @@ class FeatureExtractor:
                 enable_pe=True, denoiser_type="transformer",
             )
             if self.feature_dim == 768:
-                ckpt = torch.load("externals/Denoising_ViT/ckpt/vit_base_patch14_dinov2.lvd142m.pth.1")["denoiser"]
+                ckpt = torch.load("externals/Denoising_ViT/ckpt/vit_base_patch14_dinov2.lvd142m.pth")
+                missing, unexpected = self.denoiser.load_state_dict(ckpt, strict=False)
+                self.denoiser.eval()
+                self.denoiser.to(self.device)
+                print("Missing keys:", missing)
+                print("Unexpected keys:", unexpected)
+            elif self.feature_dim == 384:
+                ckpt = torch.load("externals/Denoising_ViT/ckpt/vit_small_patch14_dinov2.lvd142m.pth")
                 missing, unexpected = self.denoiser.load_state_dict(ckpt, strict=False)
                 self.denoiser.eval()
                 self.denoiser.to(self.device)
                 print("Missing keys:", missing)
                 print("Unexpected keys:", unexpected)
             else:
-                self.denoise = False
+                raise NotImplementedError(
+                    "Denoise only supported for model_type dinov2_vitb14 (768 dim) or dinov2_vits14 (384 dim)"
+                )
         else:
             self.denoiser = None
 

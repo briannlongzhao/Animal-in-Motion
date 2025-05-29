@@ -1,0 +1,19 @@
+base_path: "data"
+db_path: "data/database.sqlite"
+categories: ["dog"]
+#version: 1.0.0
+
+max_download: 10
+filter_words: ["sound", "music", "song", "cartoon", "game", "anime"]
+
+use_gpt_filter: True
+compute_occlusion: True
+compute_flow: True
+compute_pose: True
+verbose: True
+save_visualization: True
+
+pca_mode: apply
+pca_path: data/fauna_pca.bin
+model_type: dinov2_vits14
+denoise: False

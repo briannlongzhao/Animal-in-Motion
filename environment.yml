@@ -17,17 +17,17 @@ dependencies:
   - ffmpeg==4.2.2  # scenedetect may call ffmpeg in different paths (output of which ffmpeg at conda base), maybe do not install any ffmpeg and use default
   - einops==0.8.0
   - json5==0.9.6
-  - timm==0.6.12
+  - timm==1.0.11  #0.6.12
   - sentencepiece==0.2.0
   - diffusers==0.32.1
   - accelerate==1.2.1
-  - matplotlib==3.9.2  # 3.6.0
+  - matplotlib==3.9.2
   - scikit-learn==1.5.1
   - scikit-image==0.24.0
   - pandas==2.2.2
   - moviepy==1.0.3
   - configargparse==1.7
-  - selenium==4.24.0  # 4.21.0
+  - selenium==4.24.0
   - rclone==1.68.1
   - orjson==3.10.10
   - google-api-python-client==2.147.0

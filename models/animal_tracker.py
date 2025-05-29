@@ -26,13 +26,16 @@ from database import Database, Status
 from tools.copy_results import copy_results
 
 
-class AnimalTracker:  # TODO: maybe rename to object tracker
+class AnimalTracker:
     def __init__(
         self, output_dir, tracking_method, db_path, compute_occlusion, compute_flow, overlap_iou_threshold,
         truncation_border_width, depth_method, grounding_text_format, bbox_area_threshold, sam2_prompt_type,
         crop_height, crop_width, fps, crop_margin, device, tracking_sam_step, consistency_iou_threshold, flow_method,
         flow_batch_size, compute_pose, pose_method, pose_batch_size, min_scene_len, occlusion_batch_size, verbose,
-        save_visualization, max_track_gap, save_local_dir, version, keep_source=True, categories=None
+        save_visualization, use_gpt_filter, max_track_gap, save_local_dir, version,  image_suffix,
+        masked_image_suffix, mask_suffix, metadata_suffix, occlusion_suffix, flow_suffix, depth_suffix,
+        keypoint_suffix, pose_image_suffix,
+        keep_source=True, categories=None,
     ):
         self.output_dir = output_dir
         self.verbose = verbose
@@ -55,18 +58,19 @@ class AnimalTracker:  # TODO: maybe rename to object tracker
         self.sam2_prompt_type = sam2_prompt_type
         self.max_track_gap = max_track_gap
         self.fps = fps
+        self.use_gpt_filter = use_gpt_filter
         self.save_visualization = save_visualization
         self.save_local_dir = save_local_dir
         self.gpt_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"),)
-        self.image_suffix = "rgb.png"
-        self.masked_image_suffix = "rgb_masked.png"
-        self.mask_suffix = "mask.png"
-        self.metadata_suffix = "metadata.json"
-        self.occlusion_suffix = "occlusion.png"
-        self.flow_suffix = "flow.png"
-        self.depth_suffix = "depth.png"
-        self.keypoint_suffix = "keypoint.txt"
-        self.pose_image_suffix = "pose.png"
+        self.image_suffix = image_suffix
+        self.masked_image_suffix = masked_image_suffix
+        self.mask_suffix = mask_suffix
+        self.metadata_suffix = metadata_suffix
+        self.occlusion_suffix = occlusion_suffix
+        self.flow_suffix = flow_suffix
+        self.depth_suffix = depth_suffix
+        self.keypoint_suffix = keypoint_suffix
+        self.pose_image_suffix = pose_image_suffix
         self.init_database(version=version, db_path=db_path)
 
         with Profiler("init_tracker"):
@@ -607,7 +611,8 @@ class AnimalTracker:  # TODO: maybe rename to object tracker
                     "crop_height": self.crop_height,
                     "crop_width": self.crop_width,
                 }
-            if gpt_filter(gpt_client=self.gpt_client, image=random.choice(rgb_crops), category=category) is False:
+            if self.use_gpt_filter \
+            and gpt_filter(gpt_client=self.gpt_client, image=random.choice(rgb_crops), category=category) is False:
                 print(f"{track_id} filtered by GPT", flush=True)
                 shutil.rmtree(track_dir)
                 continue
@@ -822,7 +827,7 @@ class AnimalTracker:  # TODO: maybe rename to object tracker
                     self.db.update_track(track_id, track_path=str(dst_path), location="local")
             else:
                 for track_id in track_ids:
-                    self.db.update_track(track_id, localtion="local")
+                    self.db.update_track(track_id, location="local")
         else:
             shutil.rmtree(output_dir, ignore_errors=True)
             print(f"{output_dir} removed, no processed object")

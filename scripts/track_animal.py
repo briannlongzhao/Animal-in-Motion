@@ -18,7 +18,6 @@ def parse_args():
     parser.add_argument("--db_path", type=str, help="Path to database file")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--version", type=str, help="version of the dataset")
-    parser.add_argument("--multiprocessing", action="store_true")
     parser.add_argument("--fps", type=int, default=10, help="Resample frames to this fps before tracking")
     parser.add_argument(
         "--categories", type=str, nargs='+', default=None,
@@ -97,6 +96,9 @@ def parse_args():
         help="Method used for animal pose estimation on each frame"
     )
     parser.add_argument(
+        "--use_gpt_filter", action="store_true", help="Use GPT to filter tracks"
+    )
+    parser.add_argument(
         "--pose_batch_size", type=int, default=1,
         help="Batch size used for pose estimation"
     )
@@ -119,43 +121,17 @@ def parse_args():
     parser.add_argument(
         "--save_local_dir", type=str, default=None, help="Save tracking results to local ssd of compute node"
     )
+    parser.add_argument("--image_suffix", type=str, default="rgb.png", help="Suffix of the image file")
+    parser.add_argument("--masked_image_suffix", type=str, default="rgb_masked.png", help="Suffix of the masked image file")
+    parser.add_argument("--mask_suffix", type=str, default="mask.png", help="Suffix of the mask file")
+    parser.add_argument("--metadata_suffix", type=str, default="metadata.json", help="Suffix of the metadata file")
+    parser.add_argument("--occlusion_suffix", type=str, default="occlusion.png", help="Suffix of the occlusion file")
+    parser.add_argument("--flow_suffix", type=str, default="flow.png", help="Suffix of the flow file")
+    parser.add_argument("--depth_suffix", type=str, default="depth.png", help="Suffix of the depth file")
+    parser.add_argument("--keypoint_suffix", type=str, default="keypoint.txt", help="Suffix of the keypoint file")
+    parser.add_argument("--pose_image_suffix", type=str, default="pose.png", help="Suffix of the pose image file")
     args, _ = parser.parse_known_args()
     return args
-
-
-# def run_animal_tracker_mp(args):  # TODO maybe deprecate mp
-#     gpu_id = args.gpu_queue.get()
-#     try:
-#         animal_tracker = AnimalTracker(
-#             tracking_method=args.tracking_method,
-#             depth_method=args.depth_method,
-#             db_path=args.db_path,
-#             consistency_iou_threshold=args.consistency_iou_threshold,
-#             occlusion_batch_size=args.occlusion_batch_size,
-#             compute_occlusion=args.compute_occlusion,
-#             tracking_sam_step=args.tracking_sam_step,
-#             overlap_iou_threshold=args.overlap_iou_threshold,
-#             truncation_border_width=args.truncation_border_width,
-#             grounding_text_format=args.grounding_text_format,
-#             bbox_area_threshold=args.bbox_area_threshold,
-#             sam2_prompt_type=args.sam2_prompt_type,
-#             crop_height=args.crop_height,
-#             crop_width=args.crop_width,
-#             crop_margin=args.crop_margin,
-#             min_scene_len=args.min_scene_len,
-#             verbose=args.verbose,
-#             save_visualization=args.save_visualization,
-#             max_track_gap=args.max_track_gap,
-#             version=args.version,
-#             device=gpu_id
-#         )
-#         tracking_results = animal_tracker.run(args.clip_path, args.output_dir, args.category)
-#     except Exception as e:
-#         print(f"Skipping {args.clip_path} due to {type(e).__name__}: {str(e)}", flush=True)
-#         traceback.print_exc()
-#     finally:
-#         args.gpu_queue.put(gpu_id)
-#         exit()
 
 
 if __name__ == '__main__':
@@ -166,58 +142,50 @@ if __name__ == '__main__':
     sys.stdout = Logger(output_dir / "log.txt")
     if args.save_local_dir is not None:
         args.save_local_dir = Path(args.save_local_dir) / track_dir
-
-    if args.multiprocessing:
-        raise NotImplementedError  # TODO: maybe deprecate multiprocessing
-        # num_devices = max(torch.cuda.device_count(), 1)
-        # gpu_queue = mp.Manager().Queue()
-        # for i in range(num_devices):
-        #     gpu_queue.put(i)
-        # processes = []
-        # with mp.Pool(num_devices) as pool:
-        #     for clip in clip_list:
-        #         process_args = Namespace(**vars(args))
-        #         process_args.clip_path = str(clip["clip_path"])
-        #         process_args.output_dir = str(clip["output_dir"])
-        #         process_args.category = clip["category"]
-        #         process_args.gpu_queue = gpu_queue
-        #         processes.append(pool.apply_async(run_animal_tracker_mp, args=[process_args]))
-        #     results = [p.get() for p in processes]
-    else:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        animal_tracker = AnimalTracker(
-            output_dir=output_dir,
-            tracking_method=args.tracking_method,
-            depth_method=args.depth_method,
-            db_path=args.db_path,
-            compute_occlusion=args.compute_occlusion,
-            compute_flow=args.compute_flow,
-            flow_method=args.flow_method,
-            flow_batch_size=args.flow_batch_size,
-            compute_pose=args.compute_pose,
-            pose_method=args.pose_method,
-            pose_batch_size=args.pose_batch_size,
-            tracking_sam_step=args.tracking_sam_step,
-            overlap_iou_threshold=args.overlap_iou_threshold,
-            truncation_border_width=args.truncation_border_width,
-            grounding_text_format=args.grounding_text_format,
-            bbox_area_threshold=args.bbox_area_threshold,
-            sam2_prompt_type=args.sam2_prompt_type,
-            crop_height=args.crop_height,
-            crop_width=args.crop_width,
-            crop_margin=args.crop_margin,
-            min_scene_len=args.min_scene_len,
-            verbose=args.verbose,
-            save_visualization=args.save_visualization,
-            consistency_iou_threshold=args.consistency_iou_threshold,
-            occlusion_batch_size=args.occlusion_batch_size,
-            categories=args.categories,
-            max_track_gap=args.max_track_gap,
-            fps=args.fps,
-            save_local_dir=args.save_local_dir,
-            version=args.version,
-            device=device,
-        )
-        animal_tracker.run()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    animal_tracker = AnimalTracker(
+        output_dir=output_dir,
+        tracking_method=args.tracking_method,
+        depth_method=args.depth_method,
+        db_path=args.db_path,
+        compute_occlusion=args.compute_occlusion,
+        compute_flow=args.compute_flow,
+        flow_method=args.flow_method,
+        flow_batch_size=args.flow_batch_size,
+        compute_pose=args.compute_pose,
+        pose_method=args.pose_method,
+        pose_batch_size=args.pose_batch_size,
+        tracking_sam_step=args.tracking_sam_step,
+        overlap_iou_threshold=args.overlap_iou_threshold,
+        truncation_border_width=args.truncation_border_width,
+        grounding_text_format=args.grounding_text_format,
+        bbox_area_threshold=args.bbox_area_threshold,
+        sam2_prompt_type=args.sam2_prompt_type,
+        crop_height=args.crop_height,
+        crop_width=args.crop_width,
+        crop_margin=args.crop_margin,
+        min_scene_len=args.min_scene_len,
+        verbose=args.verbose,
+        save_visualization=args.save_visualization,
+        consistency_iou_threshold=args.consistency_iou_threshold,
+        occlusion_batch_size=args.occlusion_batch_size,
+        use_gpt_filter=args.use_gpt_filter,
+        categories=args.categories,
+        max_track_gap=args.max_track_gap,
+        fps=args.fps,
+        save_local_dir=args.save_local_dir,
+        version=args.version,
+        device=device,
+        image_suffix= args.image_suffix,
+        masked_image_suffix=args.masked_image_suffix,
+        mask_suffix=args.mask_suffix,
+        metadata_suffix=args.metadata_suffix,
+        occlusion_suffix=args.occlusion_suffix,
+        flow_suffix=args.flow_suffix,
+        depth_suffix=args.depth_suffix,
+        keypoint_suffix=args.keypoint_suffix,
+        pose_image_suffix=args.pose_image_suffix,
+    )
+    animal_tracker.run()
 
 

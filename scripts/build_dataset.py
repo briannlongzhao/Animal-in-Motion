@@ -76,7 +76,7 @@ if __name__ == '__main__':
         # filter_video_ids=filter_video_ids,
         # filter_clip_ids=filter_clip_ids,
         # filter_track_ids=filter_track_ids,
-        keep_track_ids=keep_track_ids,
+        # keep_track_ids=keep_track_ids,
     )
     dataset_builder.run()
 

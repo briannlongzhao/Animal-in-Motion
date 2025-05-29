@@ -7,3 +7,6 @@
 [submodule "externals/SEA_RAFT"]
 	path = externals/SEA_RAFT
 	url = https://github.com/princeton-vl/SEA-RAFT.git
+[submodule "externals/Denoising_ViT"]
+	path = externals/Denoising_ViT
+	url = https://github.com/Jiawei-Yang/Denoising-ViT.git
