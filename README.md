@@ -1,7 +1,7 @@
 # Animal4D
-Code repo for collect and processing Animal4D data
+Code repo for collecting and processing Animal4D data
 
-![](assets\teaser.jpg)
+![](assets/teaser.jpg)
 
 
 ## Installation 
