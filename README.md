@@ -74,7 +74,7 @@ Or manually download from [Hugging Face](https://huggingface.co/jjiaweiyang/DVT)
 python scripts/download_video.py --config configs/default.yml
 ```
 
-This will produce a directory of unprocessed videos downloaded from YouTube, ready for the next preprocessing step.
+This will produce a directory of unprocessed videos downloaded from YouTube, ready for the next preprocessing step. To download and process video data for different categories, please modify `categories` field in your config file.
 
 ### Prepare User Videos
 
