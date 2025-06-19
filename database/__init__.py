@@ -861,7 +861,7 @@ class Database:
         self.max_retry = max_retry
         self.retry_sleep = retry_sleep
 
-    @retry  # TODO: maybe use class operator to add retry to all functions
+    @retry
     def insert_video(
         self, video_id, category, query_text, fps=None, duration=None, frames=None, title=None, keywords=None,
         video_path=None, reason=None

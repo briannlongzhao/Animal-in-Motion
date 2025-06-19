@@ -1,5 +1,6 @@
 # Animal4D
-Code repo for collecting and processing Animal4D data
+This is the code repo for the data collection and processing pipeline described in paper: [A Scalable Video Processing Pipeline for 4D Animal Reconstruction](https://openreview.net/pdf?id=su89x0iO9K).
+The code automatically scrapes and process in-the-wild video into object-centered crops of animals, suitable for downstream tasks such as 3D/4D reconstruction, keypoint prediction, etc.
 
 ![](assets/teaser.jpg)
 
@@ -73,7 +74,27 @@ Or manually download from [Hugging Face](https://huggingface.co/jjiaweiyang/DVT)
 python scripts/download_video.py --config configs/default.yml
 ```
 
-This will produce a directory of unprocessed videos downloaded from YouTube.
+This will produce a directory of unprocessed videos downloaded from YouTube, ready for the next preprocessing step.
+
+### Prepare User Videos
+
+If you want to process your own videos instead of downloading from YouTube, prepare the videos in a directory with subdirectroies with category as the subdirectory name, for example:
+
+```shell
+video
+|--dog
+|  |--dog1.mp4
+|  |--dog2.mp4
+...
+```
+
+Then run the following command:
+
+```shell
+python scripts/prepare_video.py --config configs/default.yml --video_dir path/to/video
+```
+
+This will prepare the videos ready for the next preprocessing step.
 
 ### Preprocessing
 

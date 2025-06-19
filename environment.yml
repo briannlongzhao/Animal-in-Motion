@@ -1,4 +1,4 @@
-name: animal4d
+name: animal_video
 channel_priority: strict
 channels:
   - pytorch
@@ -14,10 +14,10 @@ dependencies:
   - torchmetrics==1.4.0
   - faiss-gpu==1.8.0
   - opencv==4.10.0
-  - ffmpeg==4.2.2  # scenedetect may call ffmpeg in different paths (output of which ffmpeg at conda base), maybe do not install any ffmpeg and use default
+  - ffmpeg==4.2.2
   - einops==0.8.0
   - json5==0.9.6
-  - timm==1.0.11  #0.6.12
+  - timm==1.0.11
   - sentencepiece==0.2.0
   - diffusers==0.32.1
   - accelerate==1.2.1
