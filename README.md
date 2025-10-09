@@ -104,6 +104,8 @@ Or manually download from [Hugging Face](https://huggingface.co/jjiaweiyang/DVT)
 
 #### Download/Prepare Videos
 
+Modify `category_ids` in `categories/__init__.py` to set animal/object categories for your data.
+
 **Download online videos:**
 
 ```shell
