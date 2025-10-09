@@ -1,9 +1,9 @@
 # Web-Scale Collection of Video Data for 4D Animal Reconstruction
-[Brian Nlong Zhao](https://briannlongzhao.github.io/about/)$^{1,2}$, [Jiajun Wu](https://jiajunwu.com/)$^{1\dagger}$, [Shangzhe Wu](https://elliottwu.com/)$^{3\dagger}$
+[Brian Nlong Zhao](https://briannlongzhao.github.io/about/)<sup>1,2</sup>, [Jiajun Wu](https://jiajunwu.com/)<sup>1&dagger;</sup>, [Shangzhe Wu](https://elliottwu.com/)<sup>3&dagger;</sup>
 
-$^1$Stanford University, $^2$University of Illinois Urbana-Champaign, $^3$University of Cambridge
+<sup>1</sup>Stanford University, <sup>2</sup>University of Illinois Urbana-Champaign, <sup>3</sup>University of Cambridge
 
-$^\dagger$Equal Advising
+<sup>&dagger;</sup>Equal Advising
 
 NeurIPS 2025 Datasets and Benchmarks, CVPR 2025 CV4Animals Workshop
 
@@ -200,4 +200,5 @@ We borrow and use code and models from the following repositories, thanks for th
 - [Denoising-ViT](https://github.com/Jiawei-Yang/Denoising-ViT)
 - [Depth-Anything-V2](https://github.com/DepthAnything/Depth-Anything-V2)
 - [video_object_processing](https://github.com/HusamJubran/video_object_processing)
+
 - [dino-vit-features](https://github.com/ShirAmir/dino-vit-features)
