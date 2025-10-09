@@ -5,8 +5,8 @@ from tqdm import tqdm
 from pathlib import Path
 from shutil import rmtree
 from random import shuffle
+from argparse import ArgumentParser
 from pytubefix.cli import on_progress
-
 
 from models.youtube_downloader import YouTubeBypassAge
 from models.utils import crop
@@ -15,13 +15,30 @@ from models.utils import crop
 """Restore rgb frame data in redacted data directory"""
 
 
-data_dir = Path("data/temp_data")
-video_temp_dir = Path("data/temp_video")
-num_processes = 10
-rgb_suffix = "rgb.png"
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--data_dir", type=str, required=True,
+        help="Path to the data directory containing track folders"
+    )
+    parser.add_argument(
+        "--video_dir", type=str, required=True,
+        default="./raw_videos",
+        help="Path to a temporary directory for downloading videos",
+    )
+    parser.add_argument(
+        "--cleanup", action='store_true',
+        help="Whether to delete the temporary video directory after processing",
+    )
+    parser.add_argument(
+        "--rgb_suffix", type=str, default="rgb.png",
+        help="Suffix for RGB frame files"
+    )
+    return parser.parse_args()
 
 
-def process_track(track_dir, verbose=True):
+
+def process_track(track_dir, rgb_suffix, verbose=True):
     try:
         track_id = track_dir.stem
         with open(track_dir / f"{track_id}_info.json", 'r') as f:
@@ -47,7 +64,7 @@ def process_track(track_dir, verbose=True):
                     flush=True
                 )
             stream.download(
-                output_path=video_path.parent, filename=video_id, filename_prefix=None, skip_existing=True,
+                output_path=video_path.parent, filename=f"{video_id}.mp4", filename_prefix=None, skip_existing=True,
                 timeout=None, max_retries=3,
             )
             assert video_path.exists(), f"Failed to download {video_id}"
@@ -67,7 +84,6 @@ def process_track(track_dir, verbose=True):
             ret, frame = cap.read()
             assert ret, f"Failed to read frame {frame_id} from {video_id}"
             frame_path = track_dir / (metadata_file.name.replace("metadata.json", rgb_suffix))
-
             # Crop frame
             crop_box = metadata["crop_box_xyxy"]
             crop_height = metadata["crop_height"]
@@ -83,10 +99,13 @@ def process_track(track_dir, verbose=True):
 
 
 
-
 if __name__ == "__main__":
-    if not video_temp_dir.exists():
-        video_temp_dir.mkdir(parents=True)
+    args = parse_args()
+    data_dir = Path(args.data_dir)
+    video_dir = Path(args.video_dir)
+    rgb_suffix = args.rgb_suffix
+    assert not video_dir.exists(), f"temp dir {video_dir} exist"
+    video_dir.mkdir(parents=True)
     # Get all data directories
     track_dirs = []
     for path in data_dir.rglob('*'):
@@ -95,8 +114,9 @@ if __name__ == "__main__":
                 track_dirs.append(path)
     shuffle(track_dirs)
     for track_dir in track_dirs:
-        process_track(track_dir, verbose=True)
-    rmtree(video_temp_dir, ignore_errors=True)
+        process_track(track_dir, rgb_suffix, verbose=True)
+    if args.cleanup:
+        rmtree(video_dir, ignore_errors=True)
 
 
 

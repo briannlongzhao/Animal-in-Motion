@@ -75,13 +75,7 @@ class AnimalTracker:
 
         with Profiler("init_tracker"):
             if tracking_method == "naive":
-                # TODO: add args for naive tracker and samtrack
-                # self.tracker = NaiveTracker(args)
                 raise NotImplementedError
-            elif tracking_method == "sam_track":
-                # TODO: add samtrack implementation
-                raise NotImplementedError
-                # self.tracker = SAMTracker()
             elif tracking_method == "grounded_sam2":
                 self.tracker = GroundedSAM2Tracker(
                     sam2_prompt_type=self.sam2_prompt_type,

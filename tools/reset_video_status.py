@@ -6,7 +6,6 @@ from shutil import rmtree
 Reset status for given videos
 Maybe caused by collisions in preprocessing stage, and clips cannot be found in tracking stage
 All videos will be in DOWNLOADED status after reset
-TODO: check why preprocessing may have collisions
 """
 
 video_ids = [

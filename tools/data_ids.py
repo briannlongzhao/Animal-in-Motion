@@ -1,3 +1,7 @@
+"""
+Track IDs for preview benchmark dataset
+"""
+
 keep_track_ids = [
     # bear
     "2AyBtNUWgg0_109_001", "2X-HTFSf8i0_005_001", "3Q_ms1ed4DE_019_001", "V-pCa13w5wI_007_001", "V-pCa13w5wI_009_001",
@@ -75,50 +79,10 @@ assert len(keep_track_ids) == len(set(keep_track_ids)), \
 
 
 filter_video_ids = [
-    "dtiU_Ut9xlY", "so6KGMykbEU", "xluzlKFVCe4", "TMnk3WEzK48", "In2HOWchh2g", "Ji1ke8Nt_lo", "M62wDH3dQss",
-    "j_240gxDalQ", "gtDybrNwafE", "pv8FPz1A0Oo", "JnY-mF5ogmY", "1RNlgRKSCDg", "ebL6xiLJHOw", "4YUUMD9HttU",
-    "7dKqTOIDpts", "BzvDfVksDiw", "Fzak9JNt1Aw", "WnfY553DbC8", "ZSReswKB5Rc", "_RaAd6QijL4", "dtGl2HSprO4",
-    "ewJRsZ3CQms", "rDzgRWjOe0w", "t7ZSUDGmojg", "uqKh_P51mCY", "VY_equ7zL0s", "72NGoze6Szc", "0T_QZAQ7WfE",
-    "0jUvokBHZyI", "0zAuk6kAvKU", "3DEKdhBGb5E", "4YeYqQhMzrU", "4cia3_J7v9I", "4yvTsnB9vjE", "52hOoEqIiPc",
-    "5khoYBCdXV4", "7OHjX-h0qEY", "9LuEBoXGbTA", "9qShcQMq1cA", "9qShcQMq1cA", "AM5-vUaiEsI", "CGtO011zo18",
-    "CRahRcnnOO0", "D06YbH0Xqwk", "D_5pgjLTfTI", "IhHKsLstww8", "JAxRQkkcM3s", "JICvbUfGz9A", "KKh0vw-5mXU",
-    "MjfwtPYfj3I", "OieCJBQTo-M", "Psacrw0ccfQ", "R5Of9Moyh3Y", "RF0DH8NFNGE", "SKKEG-4AKUo", "SPdpkEkMOQM",
-    "St552jpMbzU", "TKcHNEA9Hfk", "TmMlBhXc-pA", "XM-ZOpwuPe0", "ZeNmEN0UkiQ", "cNqN2uDOkws", "fLV6O1MLP18",
-    "gObv0lE8CHc", "gwT85RKoURA", "i9C21cYAhD0", "kPIadiKcuik", "kVsujr30zPA", "sDBfAmuR-ZQ", "sn1XlxZOF_s",
-    "vED44y7ZvFg", "xX2rQ2cayFk", "i6PW9JoSGbQ", "RXWfBx8EO1I", "Ai6ALxmxOw8", "LLCRZMDABLc", "Qb0WJnyRuaY",
-    "nK41Xo2aAaI", "pw9Vsfbx1w0", "wVPKLaZMuuQ", "P6Zd8_mWsQM", "eKz6Jpg9op8", "-HuVqPKgpII", "4V5ryctuddk",
-    "7t914S95TF8", "9aoRElXiAtA", "H0EXzDqt2us", "Lwu_DlN9f7k", "Nj_bmnyk_I8", "R3UEsGi2mq0", "bmczNrrhlaY",
-    "alP-uddHjIE", "yk-Mrv6KNTw", "03cXAZjgo8k", "x8BCXO082-E", "7KRdkgUKoVA", "J5Tl-ZmqA3Q", "plSpee5FyK4",
-    "r4wOe6GB5-o", "sAyQGYheWsY", "HGoKsTul86k", "OJY_H_07gqM", "WIcrcy0vO0w", "ls2weV-ag1s", "rJXBG6AgzCs",
-    "N6XHy_v_WGA", "ARl9vztSqp0", "sN5goxeTfjc", "EcMhYW8jH50", "3ggsFjpFDvo", "-e0W6PTioF4", "6RsmChHSuIg",
-    "iGxgXTdCvGc", "qAvYJXPqSHs", "6hO9GtDuTZ8", "BfF5J0uSC3E", "Db3mwuvSMSI", "V0uDOA1Uw7c", "YrrEe6uHZq8",
-    "kEECRWALlD8", "lob_tZKu3t4", "sdTokZQ78a0", "yAEyMI05cUA", "7slK-Qbi3Sw", "0S6W13Wlib0", "G0lv9nMtYJM",
-    "1mcw2AzXbes", "5VmPWc9qDiI", "6EMfEgqDeM0", "8rCnWgAjfPA", "IhLWTDmo4EQ", "J1mAMtJ9T4s", "J8zoejnJRFU",
-    "NKPICSlln_Q", "PTr47-cWhDg", "RJS4FfeDFe8", "RbCsMeHq_aM", "SAVOrSJUpKg", "ScnQlAo8nOE", "Tgu4ab-_w1I",
-    "UE-2OBD8Tm4", "UM9-giVIg4E", "aSIQVzqnoCw", "car1jghyeT8", "elN8d-VurKc", "g1idcxCjhvM", "gfJ45tO4KIo",
-    "ixm0cB5hdT0", "lW3xF39Hzxc", "mxPUuz6wDyY", "o-ArXP1FNGA", "Cwn3Ru0o8Io", "PfOdZM47PIg", "mTceN7g8rw4",
-    "nUl-eTj8tH4", "nUl-eTj8tH4", "1s6wEWJ7llg", "2-90HEXWyOc", "NLJUS_10i7s", "eQrV6wl8M70", "gEg_ft7XQW8",
-    "pCxJCmw0Mr4", "CzOhuTBsUZ8", "DwbV3w-Knv8", "JMUZPrsvYHI", "3e0NZJUnVRk", "XnTHySdyhs4", "WuD97AYWomk",
-    "sfQBECCyj_k", "CWwdhA0GjLU", "d_Ua--O_fqU", "NCfoPCNTAMQ", "nXvvkopZx-8", "e38zzHIVnro", "oGUCPwaC6Yw",
-    "btfP0A7cKUw", "NCfoPCNTAMQ", "jAxaYH_c17g", "JPqxgGPUwmw", "qLPw3l_oLH8", "jk45E6XdA4k", "h7AeTQpin8o",
-    "yGm8MNdXAXk", "6pbreU5ChmA", "zAn44YegOp0", "_CuQtDtdaKU", "a0CZVZiBuGs", "eBNDRH1T6cU", "B-FR23hswfQ",
-    "EWOmSKD_wd0", "uXivQUAqufg", "1u8_dmic9mo", "e240ThbZU4o", "jzV35pXdebk", "OfLSnSGBLaE", "pyLa978A0H8",
-    "Pt6cPvKGfPo", "4lAaHfHIgOA", "eY2tfLv1OJ8", "Scch9R9yJFk", "bv3hXOCfdAw", "2o340yySLW0", "93MiPuI3u_0",
-    "UT6oisYJZzw", "-5DtGtUO1bY", "rmr6MkBdD48", "J4bQVMo-rV0", "vFVkwVJzsrI", "7ZPrbrzllVc", "I5GJ90y3Ho4",
-
 ]
 
 filter_clip_ids = [
-    "-NxwIUGUs8s_089", "-NxwIUGUs8s_104", "-oAgw0BAGAQ_014", "05Z_bkdmmlA_011", "05Z_bkdmmlA_018", "05Z_bkdmmlA_125",
-    "05Z_bkdmmlA_070", "05Z_bkdmmlA_076", "05Z_bkdmmlA_092", "05Z_bkdmmlA_109", "05Z_bkdmmlA_110", "05Z_bkdmmlA_163",
-    "0AhPC_dHkHo_004", "0AhPC_dHkHo_006", "0AhPC_dHkHo_010", "0QHbaf6Q9oY_002", "0TOvklB_Hx0_110", "0TOvklB_Hx0_114",
-    "7DERN0R3AbM_033", "IjiUfI1-YiA_0023", "IjiUfI1-YiA_0036", "IjiUfI1-YiA_0051", "IjiUfI1-YiA_0053",
-    "IjiUfI1-YiA_0124", "IjiUfI1-YiA_0198", "IjiUfI1-YiA_0732", "IjiUfI1-YiA_0743", "IjiUfI1-YiA_0771",
-    "IjiUfI1-YiA_0834", "IjiUfI1-YiA_0947", "IjiUfI1-YiA_0996", "IjiUfI1-YiA_1116", "IjiUfI1-YiA_0969",
-    "IjiUfI1-YiA_1117", "IjiUfI1-YiA_1288", "IjiUfI1-YiA_1799", "IjiUfI1-YiA_1877", "IjiUfI1-YiA_1963",
-    "IjiUfI1-YiA_2305", "xTusP5dY09c_1131"
 ]
 
 filter_track_ids = [
-
 ]

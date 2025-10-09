@@ -15,7 +15,7 @@ patterns = [
 ]
 
 
-if __name__ == "__main__":  # TODO: refactor this for a more efficient implementation
+if __name__ == "__main__":
     if not isinstance(patterns, list):
         patterns = [patterns]
     all_files = []

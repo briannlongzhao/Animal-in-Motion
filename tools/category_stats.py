@@ -75,7 +75,6 @@ if __name__ == "__main__":
                 print(f"Track {track_path} is not gpt_filtered", flush=True)
                 continue
             video_id = track["video_id"]
-            # TODO: better way to get category
             category = track_path.split('/')[-3]
             if category not in category_to_frames:
                 category_to_frames[category] = 0

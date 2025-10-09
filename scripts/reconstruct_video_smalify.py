@@ -307,7 +307,7 @@ def main(sequence_dir):
     use_unity_prior = True
     if not use_unity_prior and not config.ALLOW_LIMB_SCALING:
         print(
-            "WARNING: Limb scaling is only recommended for the new Unity prior. TODO: add a regularizer to constrain scale parameters.")
+            "WARNING: Limb scaling is only recommended for the new Unity prior. add a regularizer to constrain scale parameters.")
         config.ALLOW_LIMB_SCALING = False
     image_exporter = ImageExporter(sequence_dir, filenames)
     model = CustomSMALFitter(device, data, config.WINDOW_SIZE, config.SHAPE_FAMILY, use_unity_prior)
@@ -360,7 +360,7 @@ def main(sequence_dir):
     image_exporter.epoch_name = str(0)
     model.generate_visualization(image_exporter)
 
-    # Create video # TODO: need ffmpeg with h264 support
+    # Create video
     # mask_diff_files = sorted(glob(os.path.join(sequence_dir, "*mask_diff_smalify.png")))
     # images_to_video(mask_diff_files, os.path.join(sequence_dir, "mask_diff_smalify.mp4"))
     # rgb_overlayed_files = sorted(glob(os.path.join(sequence_dir, "*rgb_overlayed_smalify.png")))

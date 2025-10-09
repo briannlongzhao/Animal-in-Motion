@@ -25,15 +25,6 @@ category_ids = {
 }
 
 
-SMAL_categories = {
-    0: "tiger",
-    1: "dog",
-    2: "horse",
-    3: "cow",
-    4: "hippo",
-}
-
-
 # Input label name output category index
 def get_label_idx(label):
     return category_ids.get(label, -1)

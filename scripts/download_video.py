@@ -51,7 +51,6 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    # TODO: maybe move logger inside class
     video_version = parse_version(args.version).get("video")
     video_dir = f"video_{video_version}" if video_version else "video"
     sys.stdout = Logger(Path(args.base_path) / video_dir / "log.txt")

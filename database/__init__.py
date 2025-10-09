@@ -42,7 +42,6 @@ def convert_to_dicts(cursor, rows):
 
 def parse_version(version):
     """Parse version string to tuple"""
-    # TODO: maybe add more parts
     if not version:
         return {}
     version_list = version.split('.')
@@ -89,7 +88,7 @@ def make_clip_table(version=None, db_path=config_db_path()):
     """Initialize clip table"""
     clip_version = parse_version(version).get("clip")
     table_name = f"clip_{clip_version}" if clip_version else "clip"
-    db = sqlite3.connect(db_path)  # TODO: decide start_time or start_frame
+    db = sqlite3.connect(db_path)
     db.cursor().execute(f"""
         CREATE TABLE IF NOT EXISTS '{table_name}' (
             clip_id VARCHAR (50) NOT NULL UNIQUE,
@@ -194,7 +193,7 @@ def insert_video(
     db.close()
 
 
-def insert_clip(  # TODO: decide start_time or start_frame
+def insert_clip(
     clip_id, video_id, clip_path, start_time, start_frame, duration, frames, filter_reason=None,
     version=None, db_path=config_db_path()
 ):
@@ -738,13 +737,14 @@ def drop_all_tables(version=None, db_path=config_db_path()):
     db.close()
 
 
-def rebuild_database(base_dir, version=None, db_path=config_db_path()):  # TODO refine
+# TODO: Not tested
+def rebuild_database(base_dir, version=None, db_path=config_db_path()):
     """Rebuild database by iterating directories of video, clip, and track and insert them into database"""
     version_dict = parse_version(version)
     video_version = version_dict.get("video")
     clip_version = version_dict.get("clip")
     track_version = version_dict.get("track")
-    drop_all_tables(version=version, db_path=db_path)  # TODO: add dataset table
+    drop_all_tables(version=version, db_path=db_path)
     make_video_table(version=version, db_path=db_path)
     make_clip_table(version=version, db_path=db_path)
     make_track_table(version=version, db_path=db_path)
@@ -766,8 +766,6 @@ def rebuild_database(base_dir, version=None, db_path=config_db_path()):  # TODO 
                     video_id=video_path.stem, category=category, video_path=video_path, length=length,
                     query_text="", version=version, db_path=db_path
                 )
-                # TODO: fix arguments
-                # TODO: also add discarded video
     else:
         print(f"Video directory {video_dir} not found", flush=True)
     if clip_dir.is_dir():
@@ -787,11 +785,10 @@ def rebuild_database(base_dir, version=None, db_path=config_db_path()):  # TODO 
                     length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
                     cap.release()
                     clip_id = clip_path.stem
-                    insert_clip(  # TODO: read start_time or start_frame from metadata
+                    insert_clip(
                         clip_id=clip_id, video_id=video_id, clip_path=clip_path, length=length, version=version,
                         db_path=db_path
                     )
-                    # TODO: also add discarded clip
     else:
         print(f"Clip directory {clip_dir} not found", flush=True)
     if track_dir.is_dir():
@@ -816,8 +813,6 @@ def rebuild_database(base_dir, version=None, db_path=config_db_path()):  # TODO 
                         track_id=track_id, clip_id=clip_id, video_id=video_id, track_path=track_dir, length=length,
                         version=version, db_path=db_path
                     )
-                    # TODO: read occlusion from metadata
-                    # TODO: also add discarded track
     else:
         print(f"Track directory {track_dir} not found", flush=True)
 

@@ -422,7 +422,7 @@ class YoutubeDownloader:
                 result.video_id, category, video_path=result.download_path, duration=result.duration, fps=result.fps,
                 frames=result.frames, title=result.title, keywords=result.keywords, query_text=result.query_text
             )
-        else:
+        else:  # TODO check insert
             # db.insert_video(
             #     result.video_id, category, reason=result.reason, duration=result.duration, fps=result.fps,
             #     frames=result.frames, title=result.title, keywords=result.keywords, query_text=result.query_text

@@ -192,7 +192,7 @@ class DatasetBuilder:
 
     def run(self):
         all_tracks = self.db.get_all_tracks()
-        all_tracks = [t for t in all_tracks if t.get("location") == "local"]
+        all_tracks = [t for t in all_tracks if t.get("location") == "local"]  # TODO: check condition
         all_track_ids = [t.get("track_id") for t in all_tracks]
         print(f"Total initial tracks: {len(all_tracks)}", flush=True)
         print(f"Filter method: {self.filter_method}", flush=True)
