@@ -232,8 +232,6 @@ export PYTHONPATH=$(pwd)
 python scripts/reconstruct_video_fauna.py +data_dir=/path/to/dataset
 ```
 
-
-
 ## Acknowledgements
 
 We borrow and use code and models from the following repositories, thanks for their work.
