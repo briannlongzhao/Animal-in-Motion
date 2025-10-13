@@ -12,4 +12,4 @@
 	url = https://github.com/Jiawei-Yang/Denoising-ViT.git
 [submodule "externals/Animals"]
 	path = externals/Animals
-	url = git@github.com:3DAnimals/3DAnimals.git
+	url = https://github.com/3DAnimals/3DAnimals.git

@@ -309,7 +309,7 @@ class FaunaVideo(FaunaFinetune):
                     self.optimizerInstance.add_param_group(
                         {"params": [param], "name": name, "frame_idx": int(frame_idx)}
                     )
-        print("fov", self.netInstance.fov.item())
+        # print("fov", self.netInstance.fov.item())
         return m
 
     def forward_finetune_texture(self, batch, epoch, logger=None, total_iter=None, save_results=False, save_dir=None, logger_prefix='', is_training=True, **kwargs):

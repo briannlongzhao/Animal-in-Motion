@@ -22,16 +22,9 @@ from models.animal_models.models import MagicponyVideo, FaunaVideo
 from models.animal_models.datasets import SingleSequenceDataset, ImageDataset
 from externals.Animals.model.utils.wandb_writer import WandbWriter
 from externals.Animals.model.utils.misc import setup_runtime
-
-
 submodule_dir = os.path.abspath("externals/Animals")
-method = "4dfauna"
-
-
-
 checkpoint_path = os.path.join(submodule_dir, "results/fauna/pretrained_fauna/pretrained_fauna.pth")
     
-
 
 def update_config(cfg):
     with open_dict(cfg):
@@ -66,7 +59,6 @@ def update_config(cfg):
     return cfg
 
 
-
 @hydra.main(config_path=os.path.join(submodule_dir, "config"), config_name="train_fauna")
 def main(cfg: DictConfig):
     cfg = update_config(cfg)
@@ -86,16 +78,16 @@ def main(cfg: DictConfig):
 
 def process_single_sequence(data_dir, cfg):
     output_path = os.path.join(data_dir, os.path.basename(data_dir) + "_{}")
-    output_rgb_overlayed_path = output_path.format(f"rgb_overlayed_{method}.mp4")
-    output_mask_diff_path = output_path.format(f"mask_diff_{method}.mp4")
-    output_shading_path = output_path.format(f"shading_{method}.mp4")
-    output_shading_bones_path = output_path.format(f"shading_bones_{method}.mp4")
+    output_rgb_overlayed_path = output_path.format(f"rgb_overlayed_{cfg.method}.mp4")
+    output_mask_diff_path = output_path.format(f"mask_diff_{cfg.method}.mp4")
+    output_shading_path = output_path.format(f"shading_{cfg.method}.mp4")
+    output_shading_bones_path = output_path.format(f"shading_bones_{cfg.method}.mp4")
     # out_mesh_path = os.path.join(data_dir, f"{os.path.basename(data_dir)}_mesh.glb")
     if os.path.exists(output_rgb_overlayed_path):
         print("skip already processed", data_dir)
         return
     if cfg.use_logger:
-        logger = WandbWriter(project=f"{method}_video", config=cfg, local_dir=cfg.local_dir)
+        logger = WandbWriter(project=f"{cfg.method}_video", config=cfg, local_dir=cfg.local_dir)
     else:
         logger = None
     if cfg.local_dir is not None:
@@ -168,24 +160,24 @@ def process_single_sequence(data_dir, cfg):
 
     # Finetune articulation
     model.set_finetune_arti()
-    for _ in range(cfg.arti_recon_epoch):
-        for iteration, batch in tqdm(enumerate(dataloader), desc="Finetune articulation"):
+    for _ in tqdm(range(cfg.arti_recon_epoch), total=cfg.arti_recon_epoch, desc="Finetune articulation"):
+        for iteration, batch in enumerate(dataloader):
             total_iter += 1
             batch = validate_all_to_device(batch, device=device)
             m = model.forward_finetune_arti(batch, epoch=epoch, total_iter=total_iter, is_training=True)
             model.backward()
-            if "keypoint_projection_loss" in m:
-                print("keypoint_projection_loss", m["keypoint_projection_loss"].item())
-            if "instance_normal_reg_loss" in m:
-                print("instance_normal_reg_loss", m["instance_normal_reg_loss"].item())
+            # if "keypoint_projection_loss" in m:
+            #     print("keypoint_projection_loss", m["keypoint_projection_loss"].item())
+            # if "instance_normal_reg_loss" in m:
+            #     print("instance_normal_reg_loss", m["instance_normal_reg_loss"].item())
             if logger is not None:
                 for name, loss in m.items():
                     logger.add_scalar(f'train_loss/{name}', loss, total_iter)
 
     # Finetune texture
     model.set_finetune_texture()
-    for _ in range(cfg.shape_recon_epoch):
-        for iteration, batch in tqdm(enumerate(dataloader), desc="Finetune shape"):
+    for _ in tqdm(range(cfg.shape_recon_epoch), total=cfg.shape_recon_epoch, desc="Finetune texture"):
+        for iteration, batch in enumerate(dataloader):
             total_iter += 1
             if total_iter % 50 == 0:
                 use_logger = logger
@@ -229,7 +221,7 @@ def process_single_sequence(data_dir, cfg):
         batch = validate_all_to_device(batch, device=device)
         with torch.no_grad():
             m = model.inference(
-                batch, epoch=epoch, total_iter=total_iter, local_save_dir=save_dir, image_suffix=method
+                batch, epoch=epoch, total_iter=total_iter, local_save_dir=save_dir, image_suffix=cfg.method
             )
 
 
@@ -237,16 +229,16 @@ def process_single_sequence(data_dir, cfg):
     # image_files = list(Path(save_dir).rglob(f"*normal.png"))
     # images_to_video(image_files, out_normal_path)
     # Save mask_diff video
-    image_files = sorted(list(Path(save_dir).rglob(f"*mask_diff_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*mask_diff_{cfg.method}.png")))
     images_to_video(image_files, output_mask_diff_path)
     # Save shading video
-    image_files = sorted(list(Path(save_dir).rglob(f"*shading_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*shading_{cfg.method}.png")))
     images_to_video(image_files, output_shading_path)
     # Save shading_bones video
-    image_files = sorted(list(Path(save_dir).rglob(f"*shading_bones_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*shading_bones_{cfg.method}.png")))
     images_to_video(image_files, output_shading_bones_path)
     # Save rgb_overlayed video
-    image_files = sorted(list(Path(save_dir).rglob(f"*rgb_overlayed_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*rgb_overlayed_{cfg.method}.png")))
     images_to_video(image_files, output_rgb_overlayed_path)
 
     # Save mesh glb files (not fully tested)
@@ -256,7 +248,7 @@ def process_single_sequence(data_dir, cfg):
         copy_results(
             src_dir=save_dir, dst_dir=data_dir,
             suffixes=[
-                f"{method}.png", f"{method}.txt", f"{method}.obj", f"{method}.mp4",
+                f"{cfg.method}.png", f"{cfg.method}.txt", f"{cfg.method}.obj", f"{cfg.method}.mp4",
                 # "normal.png", "mask_pred.png", "mask_diff.png", "shading.png", "shading_bones.png", "rgb_overlayed.png",
                 # "keypoint_pred.txt", "mesh.obj",
             ]
@@ -265,6 +257,8 @@ def process_single_sequence(data_dir, cfg):
 
     if logger is not None:
         logger.finish()
+
+    print("Finished processing", data_dir)
 
 
 if __name__ == "__main__":
