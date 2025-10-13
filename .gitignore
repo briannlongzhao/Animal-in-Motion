@@ -9,4 +9,7 @@ configs/config_SAM_occlusion_3rd_stage.yml
 __pycache__/
 .idea/
 *.bkp
-
+.vscode/
+wandb/
+results/
+*.log

@@ -15,6 +15,7 @@ from random import shuffle
 from subprocess import run
 from models.utils import images_to_video, validate_all_to_device, get_all_sequence_dirs, copy_results
 
+
 submodule_dir = os.path.abspath("externals/Animals")
 sys.path.append(submodule_dir)
 from models.animal_models.models import MagicponyVideo, FaunaVideo
@@ -23,106 +24,87 @@ from externals.Animals.model.utils.wandb_writer import WandbWriter
 from externals.Animals.model.utils.misc import setup_runtime
 
 
-# test_data_dir = "data/data_2.0.0/test/horse/BJ2NlybCnqA_005_001"
-# test_data_dir = "data/data_3.0.0/train/sheep/-pLbvjclJCU_019_002"
-# test_data_dir = "data/data_3.0.0/train/racoon/7Hbt9Oncz1M_003_002"
-# test_data_dir = "data/data_3.0.0/test/leopard"
-test_data_dir = "data/data_3.0.0"
 submodule_dir = os.path.abspath("externals/Animals")
-method = "fauna++"
+method = "4dfauna"
 
-if "fauna" in method:
-    checkpoint_path = os.path.join(submodule_dir, "results/fauna/pretrained_fauna/pretrained_fauna.pth")
-    # checkpoint_path = os.path.join(submodule_dir, "results/fauna/fauna_finetune/checkpoint888888.pth")
-else:
-    checkpoint_path = os.path.join(submodule_dir, "results/magicpony/horse_v2_finetune/checkpoint170000.pth")
+
+
+checkpoint_path = os.path.join(submodule_dir, "results/fauna/pretrained_fauna/pretrained_fauna.pth")
+    
 
 
 def update_config(cfg):
     with open_dict(cfg):
-        cfg.arti_recon_epoch = 25 if method == "fauna++" else 0
+        cfg.method = cfg.get("method", "4dfauna")
+        cfg.local_dir = cfg.get("local_dir")
+        cfg.arti_recon_epoch = 25 if cfg.method == "4dfauna" else 0
         cfg.shape_recon_epoch = 0
         cfg.dataset.num_frames = 8
         cfg.dataset.batch_size = 1
         cfg.dataset.in_image_size = 512
         cfg.dataset.load_keypoint = True
         cfg.dataset.load_dino_feature = False
-        cfg.dataset.local_dir = local_dir
         cfg.use_logger = False
         cfg.model.cfg_predictor_instance.enable_deform = True
         cfg.model.cfg_predictor_instance.cfg_articulation.legs_to_body_joint_indices = [3, 6, 6, 3]
         cfg.model.cfg_predictor_instance.cfg_articulation.enable_refine = False
         cfg.model.cfg_predictor_instance.cfg_articulation.use_fauna_constraints = False
         cfg.model.cfg_optim_instance.lr = 0.1
-        if method == "fauna":
-            smooth_loss_weight = 0
-            cfg.model.cfg_loss.keypoint_projection_loss_weight = 0
-        elif method == "fauna++":
+        if cfg.method == "4dfauna":
             smooth_loss_weight = 50
             cfg.model.cfg_loss.keypoint_projection_loss_weight = 50
         else:
-            raise NotImplementedError
+            smooth_loss_weight = 0
+            cfg.model.cfg_loss.keypoint_projection_loss_weight = 0
         cfg.model.cfg_loss.arti_smooth_loss_weight = smooth_loss_weight
         cfg.model.cfg_loss.artivel_smooth_loss_weight = smooth_loss_weight
         cfg.model.cfg_loss.bone_smooth_loss_weight = smooth_loss_weight
         cfg.model.cfg_loss.bonevel_smooth_loss_weight = smooth_loss_weight
         cfg.model.cfg_loss.campose_smooth_loss_weight = smooth_loss_weight
-        # cfg.model.cfg_loss.deform_smooth_loss_weight = smooth_loss_weight
         cfg.dataset.data_type = "sequence"
-
         cfg.category_mean = True
-
-        # cfg.model.cfg_loss.prior_normal_reg_loss_weight = 0.05
-        # cfg.model.cfg_loss.instance_normal_reg_loss_weight = 0.05
-        # cfg.model.cfg_loss.mask_loss_weight *= 1
-        # cfg.model.cfg_loss.mask_inv_dt_loss_weight *= 10
-
     return cfg
 
 
-local_dir = "/scr-ssd/briannlz/"
-try:
-    os.makedirs(local_dir, exist_ok=True)
-except Exception as e:
-    local_dir = local_dir.replace("/scr-ssd/", "/scr/")
-    os.makedirs(local_dir, exist_ok=True)
 
-
-@hydra.main(
-    config_path=os.path.join(submodule_dir, "config"),
-    config_name="train_fauna" if "fauna" in method else "train_ponymation_horse_stage1"
-)
+@hydra.main(config_path=os.path.join(submodule_dir, "config"), config_name="train_fauna")
 def main(cfg: DictConfig):
     cfg = update_config(cfg)
-    all_data_dir = get_all_sequence_dirs(test_data_dir)
-    for data_dir in tqdm(all_data_dir):
-        print(f"Processing {data_dir}")
+    data_dir = cfg.get("data_dir")
+    if cfg.local_dir is not None:
+        os.makedirs(cfg.local_dir, exist_ok=True)
+    assert data_dir is not None, "Please specify +data_dir=/path/to/data in command line"
+    all_data_dir = get_all_sequence_dirs(data_dir)
+    for d in tqdm(all_data_dir):
+        print(f"Processing {d}")
         try:
-            process_single_sequence(method, data_dir, cfg, local_dir, use_logger=cfg.use_logger)
+            process_single_sequence(d, cfg)
         except Exception as e:
-            print(f"Error processing {data_dir}: {e}")
+            print(f"Error processing {d}: {e}")
             traceback.print_exc()
 
 
-def process_single_sequence(method, data_dir, cfg, local_dir, use_logger=False):
+def process_single_sequence(data_dir, cfg):
     output_path = os.path.join(data_dir, os.path.basename(data_dir) + "_{}")
     output_rgb_overlayed_path = output_path.format(f"rgb_overlayed_{method}.mp4")
-    output_mask_pred_path = output_path.format(f"mask_{method}.mp4")
     output_mask_diff_path = output_path.format(f"mask_diff_{method}.mp4")
     output_shading_path = output_path.format(f"shading_{method}.mp4")
     output_shading_bones_path = output_path.format(f"shading_bones_{method}.mp4")
     # out_mesh_path = os.path.join(data_dir, f"{os.path.basename(data_dir)}_mesh.glb")
     if os.path.exists(output_rgb_overlayed_path):
-        print("skip", data_dir)
+        print("skip already processed", data_dir)
         return
-    if use_logger:
-        logger = WandbWriter(project=f"{method}_video", config=cfg, local_dir=local_dir)
+    if cfg.use_logger:
+        logger = WandbWriter(project=f"{method}_video", config=cfg, local_dir=cfg.local_dir)
     else:
         logger = None
-    local_save_dir = os.path.join(local_dir, os.path.basename(data_dir))
+    if cfg.local_dir is not None:
+        save_dir = os.path.join(cfg.local_dir, os.path.basename(data_dir))
+    else:
+        save_dir = data_dir
     accelerator = Accelerator()
     device = setup_runtime(cfg)
-    model = MagicponyVideo(cfg.model) if method == "magicpony" else FaunaVideo(cfg.model)
+    model = FaunaVideo(cfg.model) if "fauna" in cfg.method else MagicponyVideo(cfg.model)
     print(f"Loading checkpoint from {checkpoint_path}")
     cp = torch.load(checkpoint_path, map_location="cpu")
     epoch, total_iter = cp["epoch"], cp["total_iter"]
@@ -147,7 +129,7 @@ def process_single_sequence(method, data_dir, cfg, local_dir, use_logger=False):
         load_dino_feature=cfg.dataset.load_dino_feature,
         random_sample=False,
         dense_sample=True,
-        local_dir=local_dir
+        local_dir=cfg.local_dir
     )
     dataloader = DataLoader(
         dataset,
@@ -227,7 +209,7 @@ def process_single_sequence(method, data_dir, cfg, local_dir, use_logger=False):
         load_dino_feature=cfg.dataset.load_dino_feature,
         random_sample=False,
         dense_sample=False,
-        local_dir=local_dir
+        local_dir=cfg.local_dir
     )
     dataloader = DataLoader(
         dataset,
@@ -247,39 +229,39 @@ def process_single_sequence(method, data_dir, cfg, local_dir, use_logger=False):
         batch = validate_all_to_device(batch, device=device)
         with torch.no_grad():
             m = model.inference(
-                batch, epoch=epoch, total_iter=total_iter, local_save_dir=local_save_dir, image_suffix=method
+                batch, epoch=epoch, total_iter=total_iter, local_save_dir=save_dir, image_suffix=method
             )
 
 
     # Save normal video
-    # image_files = list(Path(local_save_dir).rglob(f"*normal.png"))
+    # image_files = list(Path(save_dir).rglob(f"*normal.png"))
     # images_to_video(image_files, out_normal_path)
     # Save mask_diff video
-    image_files = sorted(list(Path(local_save_dir).rglob(f"*mask_diff_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*mask_diff_{method}.png")))
     images_to_video(image_files, output_mask_diff_path)
     # Save shading video
-    image_files = sorted(list(Path(local_save_dir).rglob(f"*shading_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*shading_{method}.png")))
     images_to_video(image_files, output_shading_path)
     # Save shading_bones video
-    image_files = sorted(list(Path(local_save_dir).rglob(f"*shading_bones_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*shading_bones_{method}.png")))
     images_to_video(image_files, output_shading_bones_path)
     # Save rgb_overlayed video
-    image_files = sorted(list(Path(local_save_dir).rglob(f"*rgb_overlayed_{method}.png")))
+    image_files = sorted(list(Path(save_dir).rglob(f"*rgb_overlayed_{method}.png")))
     images_to_video(image_files, output_rgb_overlayed_path)
 
-    # Save mesh glb files
-    # run(["python", "tools/generate_glb.py", "--input_dir", local_save_dir, "--output_path", out_mesh_path])
+    # Save mesh glb files (not fully tested)
+    # run(["python", "tools/generate_glb.py", "--input_dir", save_dir, "--output_path", out_mesh_path])
 
-    copy_results(
-        src_dir=local_save_dir, dst_dir=data_dir,
-        suffixes=[
-            f"{method}.png", f"{method}.txt", f"{method}.obj", f"{method}.mp4",
-            # "normal.png", "mask_pred.png", "mask_diff.png", "shading.png", "shading_bones.png", "rgb_overlayed.png",
-            # "keypoint_pred.txt", "mesh.obj",
-        ]
-    )
-
-    run(["rm", "-rf", local_save_dir])
+    if cfg.local_dir is not None:
+        copy_results(
+            src_dir=save_dir, dst_dir=data_dir,
+            suffixes=[
+                f"{method}.png", f"{method}.txt", f"{method}.obj", f"{method}.mp4",
+                # "normal.png", "mask_pred.png", "mask_diff.png", "shading.png", "shading_bones.png", "rgb_overlayed.png",
+                # "keypoint_pred.txt", "mesh.obj",
+            ]
+        )
+        run(["rm", "-rf", save_dir])
 
     if logger is not None:
         logger.finish()
