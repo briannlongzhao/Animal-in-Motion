@@ -15,6 +15,15 @@ TLDR: A data pipeline that automatically scrapes and process in-the-wild video i
 
 Both datasets have the same format and file structure and consists of video data for 23 common quadruped categories.
 
+```shell
+AnimalVideo
+|--horse
+|  |--AmWzveUePWU_019_001
+|  |  |--00000000_mask.png
+|  |  |--00000000_metadata.json
+|  |  |...
+```
+
 **AnimalVideo_preview**
 
 A small curated dataset for benchmarking and visualization purpose. See details [here](https://www.kaggle.com/datasets/932f0231547d2d31829bb099159938c6bc7358988c864a2f2aaa5cfa770dafed).
@@ -37,11 +46,11 @@ python tools/restore_rgb_data.py --data_dir=/path/to/dataset
 
 Note: this script downloads videos from online sources, therefore will fail if the video source is unavailable.
 
-## Collecting your own web-scale video dataset
+## Collecting Video Dataset
 
 ### Installation 
 
-The code is tested based on CUDA 12.1
+The code is tested with CUDA 12.1
 
 Setup conda environment:
 
@@ -187,8 +196,45 @@ python scripts/extract_feature.py --config configs/default.yml --pca_mode=apply 
 
 This will add DINO features to the data in dataset directory.
 
+## 4D-Fauna: 4D Reconstruction form Video
 
-## Acknowledgement
+### Installation
+
+Follow [3DAnimals](https://github.com/3DAnimals/3DAnimals/blob/main/INSTALL.md) to install conda environment (tested with CUDA 11.3).
+
+Initialize Git submodules:
+
+```shell
+git submodule update --init --recursive
+```
+
+Download pretrained 3D-Fauna checkpoint:
+
+```shell
+cd externals/Animals/results/fauna
+bash download_pretrained_fauna.sh
+cd ../../data/tets
+bash download_tets.sh
+cd ../../../../
+mkdir -p data/tets
+cp -rv externals/Animals/data/tets/*.npz data/tets
+```
+
+Set Python path:
+
+```shell
+export PYTHONPATH=$(pwd)
+```
+
+### Run Reconstruction
+
+```shell
+python scripts/reconstruct_video_fauna.py +data_dir=/path/to/dataset
+```
+
+
+
+## Acknowledgements
 
 We borrow and use code and models from the following repositories, thanks for their work.
 
@@ -200,5 +246,5 @@ We borrow and use code and models from the following repositories, thanks for th
 - [Denoising-ViT](https://github.com/Jiawei-Yang/Denoising-ViT)
 - [Depth-Anything-V2](https://github.com/DepthAnything/Depth-Anything-V2)
 - [video_object_processing](https://github.com/HusamJubran/video_object_processing)
-
 - [dino-vit-features](https://github.com/ShirAmir/dino-vit-features)
+- [3DAnimals](https://github.com/3DAnimals/3DAnimals)
