@@ -148,7 +148,7 @@ class FaunaFinetune(FaunaModel):
             shape, pose_raw, pose, mvp, w2c, campos, texture, im_features, deformation, arti_params, light, forward_aux = self.netInstance(
                 input_image, prior_shape, epoch, total_iter, frame_ids=frame_idx, is_training=is_training)
         keypoint_gt_flag = disable_keypoint_loss(w2c, b=batch_size)
-        print(keypoint_gt_flag)
+        # print(keypoint_gt_flag)
         keypoint_gt_flag = rearrange(keypoint_gt_flag, "(b f) -> b f", b=batch_size, f=num_frames)
         rot_logit = forward_aux['rot_logit']
         rot_idx = forward_aux['rot_idx']
