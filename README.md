@@ -16,7 +16,7 @@ TLDR: A data pipeline that automatically scrapes and process in-the-wild video i
 Both datasets have the same format and file structure and consists of video data for 23 common quadruped categories.
 
 ```shell
-AnimalVideo
+AiM
 |--horse
 |  |--AmWzveUePWU_019_001
 |  |  |--00000000_mask.png
@@ -24,18 +24,18 @@ AnimalVideo
 |  |  |...
 ```
 
-**AnimalVideo_preview**
+**AiM_preview**
 
 A small curated dataset for benchmarking and visualization purpose. See details [here](https://www.kaggle.com/datasets/932f0231547d2d31829bb099159938c6bc7358988c864a2f2aaa5cfa770dafed).
 
-**AnimalVideo_full**
+**AiM_full**
 
 Large dataset without manual filtering, consists of 29,927 videos, totaling 2,042,781 frames.
 
 Download dataset:
 
 ```shell
-wget https://download.cs.stanford.edu/viscam/AnimalVideo/AnimalVideo_full.zip
+wget https://download.cs.stanford.edu/viscam/AiM/AiM_full.zip
 ```
 
 RGB frames are not included in this full dataset. To obtain original RGB video and video frames, run
@@ -56,7 +56,7 @@ Setup conda environment:
 
 ```shell
 conda env create -f environment.yml
-conda activate animal_video
+conda activate aim
 ```
 
 Set Python path:
@@ -93,7 +93,7 @@ Download ViTPose++ checkpoint:
 ```shell
 mkdir externals/ViTPose/ckpt
 cd externals/ViTPose/ckpt
-wget https://download.cs.stanford.edu/viscam/AnimalVideo/ckpt/apt36k.pth
+wget https://download.cs.stanford.edu/viscam/AiM/ckpt/apt36k.pth
 cd ../../..
 ```
 
@@ -178,7 +178,7 @@ Or download a pre-fitted PCA matrix:
 
 ```shell
 cd data
-wget https://download.cs.stanford.edu/viscam/AnimalVideo/ckpt/fauna_pca.bin
+wget https://download.cs.stanford.edu/viscam/AiM/ckpt/fauna_pca.bin
 cd ..
 ```
 
