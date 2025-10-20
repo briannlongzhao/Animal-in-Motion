@@ -6,102 +6,136 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-from models.utils import get_all_sequence_dirs
+from models.utils import get_all_sequence_dirs, action_labels
 from database import Database
 
 data_dir = Path("data/track_3.0.0")  # Should have all categories as subdirectories
 image_suffix = "rgb.png"
-use_database = True  # Use database only if stating unfiltered tracks
-version = "3.0.0"
-db_path = f"data/database.sqlite"
-
-if use_database:
-    assert "track" in str(data_dir)
 
 
-def pie_chart(data, save_path="data/temp_pie.pdf"):
+def pie_chart(data, save_path="data/temp_pie.pdf", title=""):
     labels = list(data.keys())
     sizes = list(data.values())
-    # explode = [0.03] * len(labels)  # 0.03 means 3% offset for every slice
-    plt.figure(figsize=(8, 8))
-    plt.pie(
+    
+    # Set modern style
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.size'] = 11
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # Create color palette
+    colors = sns.color_palette("viridis", len(labels))
+    
+    # Create labels with category name and value
+    labels_with_values = [f"{label}\n{value:,}" for label, value in zip(labels, sizes)]
+    
+    # Create pie chart
+    wedges, texts = ax.pie(
         sizes,
-        labels=labels,
-        autopct='%1.1f%%',
+        labels=labels_with_values,
         startangle=140,
-        # explode=explode,
+        colors=colors,
         shadow=False,
-        textprops={'fontsize': 16}
+        textprops={'fontsize': 20},
+        wedgeprops={'edgecolor': 'white', 'linewidth': 1.5}
     )
+    
+    ax.set_title(title, fontsize=15, fontweight='bold', pad=20)
     plt.axis('equal')
     plt.tight_layout()
-    plt.savefig(save_path, format="pdf")
+    plt.savefig(save_path, format="pdf", dpi=300, bbox_inches='tight')
     print("Saved pie chart to", save_path)
 
 
-def bar_chart(data, save_path="data/temp_bar.pdf"):
-    sorted_items = sorted(data.items(), key=lambda x: x[1], reverse=False)
+def bar_chart(data, save_path="data/temp_bar.pdf", title="", xlabel="Category", ylabel="Number of Frames"):
+    sorted_items = sorted(data.items(), key=lambda x: x[1], reverse=True)
     categories, values = zip(*sorted_items)
-    sns.set_theme(style="whitegrid")
-    plt.figure(figsize=(8, 5))
+    
+    # Set a modern, clean style
+    sns.set_theme(style="ticks", palette="deep")
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.size'] = 11
+    
+    fig, ax = plt.subplots(figsize=(8, 6))
     df = pd.DataFrame({"Category": categories, "Values": values})
-    sns.barplot(data=df, y="Category", x="Values", order=categories)
-    ax = plt.gca()
+    
+    # Create bar plot with custom colors and thinner bars
+    bars = sns.barplot(
+        data=df, x="Category", y="Values", order=categories,
+        palette="viridis", edgecolor='black', linewidth=0.8, ax=ax,
+        width=0.7  # Make bars thinner (default is 0.8)
+    )
+    
+    # Add value labels on top of bars
     for container in ax.containers:
         for bar in container.patches:
-            x = bar.get_width()
-            y = bar.get_y() + bar.get_height() / 2
-            label = f"{int(x)}"
-            ax.text(x + 0.5, y, label, va='center', fontsize=10)
-    ax.set_xlabel("# frames", fontsize=12)
-    ax.set_ylabel("Category", fontsize=12)
+            height = bar.get_height()
+            x = bar.get_x() + bar.get_width() / 2
+            label = f"{int(height):,}"  # Add comma separator for thousands
+            ax.text(x, height + max(values) * 0.01, label, 
+                   ha='left', va='bottom', fontsize=14, rotation=45, rotation_mode='anchor')
+    
+    # Styling
+    ax.set_ylabel(ylabel, fontsize=13, fontweight='bold')
+    ax.set_xlabel(xlabel, fontsize=13, fontweight='bold')
+    ax.set_title(title, fontsize=15, fontweight='bold', pad=20)
+    
+    # Format y-axis with comma separators
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{int(x):,}'))
+    
+    # Rotate x-axis labels with end of text aligned to center of bar
+    ax.set_xticks(range(len(categories)))
+    ax.set_xticklabels(categories, rotation=45, ha='right', fontsize=14, rotation_mode='anchor')
+    plt.yticks(fontsize=14)
+    
+    # Add subtle grid
+    ax.grid(axis='y', alpha=0.3, linestyle='--', linewidth=0.7)
+    ax.set_axisbelow(True)
+    
+    # Remove top and right spines
+    sns.despine()
+    
     plt.tight_layout()
-    plt.savefig(save_path, format="pdf")
+    plt.savefig(save_path, format="pdf", dpi=300, bbox_inches='tight')
     print("Saved bar chart to", save_path)
 
 
 if __name__ == "__main__":
     category_to_frames = {}
-    category_to_tracks = {}
-    if use_database:  # For track directory, not for data directory
-        db = Database(db_path=db_path, version=version)
-        all_tracks = db.get_all_tracks()
-        for track in tqdm(all_tracks):
-            track_path = track["track_path"]
-            if not os.path.exists(track_path):
-                print(f"Track {track_path} does not exist", flush=True)
-                continue
-            if track["gpt_filtered"] == False:
-                print(f"Track {track_path} is not gpt_filtered", flush=True)
-                continue
-            video_id = track["video_id"]
-            category = track_path.split('/')[-3]
-            if category not in category_to_frames:
-                category_to_frames[category] = 0
-                category_to_tracks[category] = 0
-            category_to_tracks[category] += 1
-            category_to_frames[category] += track["length"]
-    else:
-        for cat_dir in tqdm(list(data_dir.iterdir())):
-            if not cat_dir.is_dir():
-                continue
-            category = cat_dir.name
-            if category not in category_to_frames:
-                category_to_frames[category] = 0
-                category_to_tracks[category] = 0
-            all_sequence_dirs = get_all_sequence_dirs(cat_dir)
-            category_to_tracks[category] = len(all_sequence_dirs)
-            for sequence_dir in all_sequence_dirs:
-                num_frames = len(list(glob(f"{sequence_dir}/*{image_suffix}", recursive=True)))
-                category_to_frames[category] += num_frames
+    category_to_videos = {}
+    action_to_videos = {action: 0 for action in action_labels}
+    for cat_dir in tqdm(list(data_dir.iterdir())):
+        if not cat_dir.is_dir():
+            continue
+        category = cat_dir.name
+        if category not in category_to_frames:
+            category_to_frames[category] = 0
+            category_to_videos[category] = 0
+        all_sequence_dirs = get_all_sequence_dirs(cat_dir)
+        category_to_videos[category] = len(all_sequence_dirs)
+        for sequence_dir in all_sequence_dirs:
+            num_frames = len(list(glob(f"{sequence_dir}/*{image_suffix}", recursive=True)))
+            category_to_frames[category] += num_frames
+            actions_file = os.path.join(sequence_dir, "actions.txt")
+            with open(actions_file, 'r') as f:
+                actions = f.read().splitlines()
+            for action in actions:
+                if action in action_to_videos:
+                    action_to_videos[action] += 1
+    print("Total frames:", sum(category_to_frames.values()))
+    print("Total videos:", sum(category_to_videos.values()))
 
     for category in category_to_frames.keys():
-        print(f"{category}:\t{category_to_tracks[category]} tracks,\t{category_to_frames[category]} frames")
-    print(f"total:\t{sum(category_to_tracks.values())} tracks,\t{sum(category_to_frames.values())} frames")
+        print(f"{category}:\t{category_to_videos[category]} tracks,\t{category_to_frames[category]} frames")
+    print(f"total:\t{sum(category_to_videos.values())} tracks,\t{sum(category_to_frames.values())} frames")
+    for action in action_to_videos.keys():
+        print(f"{action}:\t{action_to_videos[action]} tracks")
 
-    bar_chart(category_to_frames)
-    pie_chart(category_to_frames)
-
+    bar_chart(category_to_frames, save_path="data/category_bar.pdf")
+    pie_chart(category_to_frames, save_path="data/category_pie.pdf")
+    bar_chart(category_to_videos, save_path="data/category_bar_videos.pdf", xlabel="Category", ylabel="Number of Videos")
+    pie_chart(category_to_videos, save_path="data/category_pie_videos.pdf")
+    bar_chart(action_to_videos, save_path="data/action_bar.pdf", xlabel="Action", ylabel="Number of Videos")
 
 
 

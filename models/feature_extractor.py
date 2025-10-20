@@ -98,7 +98,7 @@ class FeatureExtractor:
 
     def create_dataloader(self, root, num_samples=None, shuffle=False):
         dataset = FeatureExtractionDataset(
-            data_dir=root, image_suffix=self.image_suffix, mask_suffix=self.mask_suffix, transform=self.transform,
+            data_dir=root, image_suffix=self.image_suffix, mask_suffix=self.mask_suffix, feature_suffix=self.feature_suffix, transform=self.transform,
             transform_no_norm=self.transform_no_norm, mask_transform=self.mask_transform
         )
         if num_samples and num_samples < len(dataset):
@@ -183,6 +183,7 @@ class FeatureExtractor:
         num_features = 0
         for idx, batch in enumerate(tqdm(dataloader, total=len(dataloader))):
             if self.skip_batch(batch) and (idx + 1) != len(dataloader):
+                print("skip batch")
                 continue
             features = self.extract_features(batch["image"])
             num_features += features.shape[0]
@@ -235,16 +236,22 @@ class FeatureExtractor:
 
 class FeatureExtractionDataset(Dataset):
     def __init__(
-        self, data_dir, image_suffix, mask_suffix, transform=None, transform_no_norm=None,
+        self, data_dir, image_suffix, mask_suffix, feature_suffix, transform=None, transform_no_norm=None,
         mask_transform=None, load_mask=True
     ):
-        self.image_paths = glob(os.path.join(data_dir, '**/*' + image_suffix), recursive=True)
+        temp_image_paths = glob(os.path.join(data_dir, '**/*' + image_suffix), recursive=True)
+        self.image_paths = []
+        for image_path in temp_image_paths:
+            feature_path = str(image_path).replace(image_suffix, feature_suffix)
+            if not os.path.exists(feature_path):
+                self.image_paths.append(image_path)
         self.transform = transform if transform is not None else transforms.ToTensor()
         self.transform_no_norm = transform_no_norm if transform_no_norm is not None else transforms.ToTensor()
         self.mask_transform = mask_transform if mask_transform is not None else transforms.ToTensor()
         self.load_mask = load_mask
         self.image_suffix = image_suffix
         self.mask_suffix = mask_suffix
+        self.feature_suffix = feature_suffix
 
     def __len__(self):
         return len(self.image_paths)

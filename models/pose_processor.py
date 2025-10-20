@@ -57,12 +57,22 @@ class PoseProcessor:
 
 class PoseDataset(Dataset):
     def __init__(self, data_dir, image_suffix, keypoint_suffix, pose_image_suffix):
-        self.all_image_paths = list(glob(f"{str(data_dir).rstrip('/')}/**/*{image_suffix}", recursive=True))
-        self.all_pose_paths = [str(path).replace(image_suffix, keypoint_suffix) for path in self.all_image_paths]
-        self.all_pose_image_paths = [
-            str(path).replace(image_suffix, pose_image_suffix) for path in self.all_image_paths
+        temp_image_paths = list(glob(f"{str(data_dir).rstrip('/')}/**/*{image_suffix}", recursive=True))
+        temp_pose_paths = [str(path).replace(image_suffix, keypoint_suffix) for path in temp_image_paths]
+        temp_pose_image_paths = [
+            str(path).replace(image_suffix, pose_image_suffix) for path in temp_image_paths
         ]
+        assert len(temp_image_paths) == len(temp_pose_paths) == len(temp_pose_image_paths)
+        self.all_image_paths, self.all_pose_paths, self.all_pose_image_paths = [], [], []
+        for image_path, pose_path, pose_image_path in zip(temp_image_paths, temp_pose_paths, temp_pose_image_paths):
+            if not os.path.exists(pose_path):
+                self.all_image_paths.append(image_path)
+                self.all_pose_paths.append(pose_path)
+                self.all_pose_image_paths.append(pose_image_path)
         assert len(self.all_image_paths) == len(self.all_pose_paths) == len(self.all_pose_image_paths)
+        if len(all_image_paths) == 0:
+            print("All images already processed")
+            exit()
 
     def __len__(self):
         return len(self.all_image_paths)

@@ -203,11 +203,13 @@ def get_all_sequence_dirs(data_dir, image_suffix="rgb.png", sorted=False):
         for f in files:
             if f.endswith(image_suffix):
                 result.add(root)
+                break
     result = list(result)
     if sorted:
         result.sort()
     else:
         shuffle(result)
+    print(f"Found {len(result)} sequence dirs in {data_dir}")
     return result
 
 
@@ -296,3 +298,35 @@ FAUNA_JOINTS = {
     15: "LR top", 16: "LR middle", 17: "LR feet",
     18: "RR top", 19: "RR middle", 20: "RR feet",
 }
+
+
+action_labels = [
+    "keeping still",
+    "walking",
+    "eating",
+    "swimming",
+    "drinking",
+    "running",
+    "shaking head",
+    "jumping",
+    "attacking",
+    "flapping tail",
+    "shaking",
+    "climbing",
+    "turning around",
+    "grooming",
+    "struggling",
+    "digging",
+    "sitting",
+    "lying down",
+    "rearing",
+    "dancing",
+    "neck raising",
+    "face dipping",
+    "back kicking",
+    "resting",
+    "leaning",
+    "rearing",
+    "rolling",
+    "barking"
+]
