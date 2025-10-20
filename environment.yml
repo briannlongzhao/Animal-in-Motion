@@ -1,4 +1,4 @@
-name: animal_video
+name: aim
 channel_priority: strict
 channels:
   - pytorch
