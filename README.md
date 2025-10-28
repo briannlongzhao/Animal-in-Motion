@@ -31,6 +31,7 @@ A small curated dataset for benchmarking and visualization purpose. See details 
 **AiM_full**
 
 Large dataset without manual filtering, consists of 29,927 videos, totaling 2,042,781 frames.
+Each data sample contains per-frame occlusion and optical flow attributes for further filtering.
 
 Download dataset:
 
@@ -246,3 +247,4 @@ We borrow and use code and models from the following repositories, thanks for th
 - [video_object_processing](https://github.com/HusamJubran/video_object_processing)
 - [dino-vit-features](https://github.com/ShirAmir/dino-vit-features)
 - [3DAnimals](https://github.com/3DAnimals/3DAnimals)
+
