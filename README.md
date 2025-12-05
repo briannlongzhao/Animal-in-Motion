@@ -11,6 +11,8 @@ TLDR: A data pipeline that automatically scrapes and process in-the-wild video i
 
 ![](assets/teaser.jpg)
 
+![](assets/teaser_video.gif)
+
 ## Preprocessed Datasets
 
 Both datasets have the same format and file structure and consists of video data for 23 common quadruped categories.
